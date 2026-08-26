@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小度语音循环播报助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+        body {
+            padding: 20px;
+            max-width: 720px;
+            margin: 0 auto;
+            background: #f7f8fa;
+        }
+        .wrap {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+        .tip {
+            background: #eff6ff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1d4ed8;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .ctrl-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn-start { background: #2563eb; color: white; }
+        .btn-stop { background: #dc2626; color: white; }
+        .btn-add { background: #059669; color: white; }
+        .btn-clear { background: #6b7280; color: white; }
+        /* 流程条目样式 */
+        .flow-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        .flow-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+            flex-wrap: wrap;
+        }
+        .flow-item:last-child { border-bottom: none; }
+        .flow-item input {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .text-input { width: 140px; margin-right: 20px; }
+        .time-input { width: 70px; }
+        .del-btn {
+            background: #f87171;
+            color: white;
+            padding: 6px 10px;
+        }
+        .log-box h4 {
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        #logArea {
+            width: 100%;
+            height: 220px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h2>小度语音循环播报助手</h2>
+    <div class="tip">
+        1. 顶部流程列表自定义播报文字+等待间隔（秒），可新增/删除多条动作<br>
+        2. 点击【添加动作】新增一条播报节点，清空流程重置所有配置<br>
+        3. 运行逻辑：循环执行下方所有流程条目
+    </div>
+
+    <div class="ctrl-bar">
+        <button class="btn-start" id="startBtn">开始播报</button>
+        <button class="btn-stop" id="stopBtn">停止播报</button>
+        <button class="btn-add" id="addItemBtn">添加动作节点</button>
+        <button class="btn-clear" id="clearFlowBtn">清空所有流程</button>
+    </div>
+
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span>开场等待间隔(秒)：</span>
+        <input type="number" id="initDelay" value="18" min="1" style="width:80px;padding:8px;">
+    </div>
+
+    <h4 style="margin-bottom:10px;">循环流程列表（按顺序无限循环）</h4>
+    <div class="flow-list" id="flowList">
+        <!-- 默认初始化流程：挑战首领 →20秒鬼火 →25秒鬼火 →25秒鬼火 →20秒挑战首领 -->
+        <div class="flow-item">
+            <span>播报文字：</span>
+            <input class="text-input" value="挑战首领">
+            <span>等待时长(秒)：</span>
+            <input class="time-input" value="20">
+            <button class="del-btn">删除</button>
+        </div>
+        <div class="flow-item">
+            <span>播报文字：</span>
+            <input class="text-input" value="鬼火">
+            <span>等待时长(秒)：</span>
+            <input class="time-input" value="25">
+            <button class="del-btn">删除</button>
+        </div>
+        <div class="flow-item">
+            <span>播报文字：</span>
+            <input class="text-input" value="鬼火">
+            <span>等待时长(秒)：</span>
+            <input class="time-input" value="25">
+            <button class="del-btn">删除</button>
+        </div>
+        <div class="flow-item">
+            <span>播报文字：</span>
+            <input class="text-input" value="鬼火">
+            <span>等待时长(秒)：</span>
+            <input class="time-input" value="20">
+            <button class="del-btn">删除</button>
+        </div>
+    </div>
+
+    <div class="log-box">
+        <h4>运行日志</h4>
+        <div id="logArea"></div>
+    </div>
+</div>
+
+<script>
+    const logArea = document.getElementById('logArea');
+    const flowList = document.getElementById('flowList');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const addItemBtn = document.getElementById('addItemBtn');
+    const clearFlowBtn = document.getElementById('clearFlowBtn');
+    const initDelayInput = document.getElementById('initDelay');
+
+    let timerList = [];
+    let isRunning = false;
+
+    // 语音朗读
+    function speakWord(text) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'zh-CN';
+        utter.rate = 1;
+        window.speechSynthesis.speak(utter);
+        addLog(`【播报】${text}`);
+    }
+
+    // 写入日志
+    function addLog(msg) {
+        const time = new Date().toLocaleTimeString();
+        logArea.innerText = `[${time}] ${msg}\n` + logArea.innerText;
+    }
+
+    // 清空所有定时器
+    function clearAllTimer() {
+        timerList.forEach(t => clearTimeout(t));
+        timerList = [];
+        window.speechSynthesis.cancel();
+    }
+
+    // 获取当前所有流程配置
+    function getFlowConfig() {
+        const items = flowList.querySelectorAll('.flow-item');
+        const flowArr = [];
+        items.forEach(item => {
+            const text = item.querySelector('.text-input').value.trim();
+            const sec = Number(item.querySelector('.time-input').value) || 1;
+            flowArr.push({ text, delay: sec * 1000 });
+        });
+        return flowArr;
+    }
+
+    // 循环执行整条流程
+    function runFlow(flowArr, index = 0) {
+        if (!isRunning) return;
+        const current = flowArr[index];
+        speakWord(current.text);
+        // 当前节点等待结束，执行下一条
+        const t = setTimeout(() => {
+            const nextIdx = index + 1;
+            if (nextIdx >= flowArr.length) {
+                // 一轮走完，从头循环
+                runFlow(flowArr, 0);
+            } else {
+                runFlow(flowArr, nextIdx);
+            }
+        }, current.delay);
+        timerList.push(t);
+    }
+
+    // 添加一条流程节点
+    addItemBtn.addEventListener('click', () => {
+        const html = `
+            <div class="flow-item">
+                <span>播报文字：</span>
+                <input class="text-input" placeholder="输入播报内容">
+                <span>等待时长(秒)：</span>
+                <input class="time-input" value="10" min="1">
+                <button class="del-btn">删除</button>
+            </div>
+        `;
+        flowList.insertAdjacentHTML('beforeend', html);
+        bindDelBtn();
+    });
+
+    // 绑定删除按钮事件
+    function bindDelBtn() {
+        document.querySelectorAll('.del-btn').forEach(btn => {
+            btn.onclick = function () {
+                this.closest('.flow-item').remove();
+            }
+        })
+    }
+    bindDelBtn();
+
+    // 清空全部流程
+    clearFlowBtn.addEventListener('click', () => {
+        flowList.innerHTML = '';
+        addLog("已清空所有自定义流程节点");
+    });
+
+    // 开始播报
+    startBtn.addEventListener('click', () => {
+        if (isRunning) {
+            addLog("播报正在运行，请勿重复点击");
+            return;
+        }
+        const flow = getFlowConfig();
+        if (flow.length === 0) {
+            addLog("错误：流程列表不能为空，请添加播报动作");
+            return;
+        }
+        isRunning = true;
+        addLog("===== 播报启动 =====");
+        
+        // 开场延时
+        const initDelay = Number(initDelayInput.value) * 1000;
+        const t = setTimeout(() => {
+            runFlow(flow, 0);
+        }, initDelay);
+        timerList.push(t);
+    });
+
+    // 停止播报
+    stopBtn.addEventListener('click', () => {
+        if (!isRunning) return;
+        isRunning = false;
+        clearAllTimer();
+        addLog("===== 手动停止播报 =====");
+    });
+</script>
+</body>
+</html>
