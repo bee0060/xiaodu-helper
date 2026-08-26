@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,22 +12,26 @@
             box-sizing: border-box;
             font-family: system-ui, sans-serif;
         }
+
         body {
             padding: 20px;
             max-width: 720px;
             margin: 0 auto;
             background: #f7f8fa;
         }
+
         .wrap {
             background: #fff;
             border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
         }
+
         h2 {
             margin-bottom: 16px;
             color: #1f2937;
         }
+
         .tip {
             background: #eff6ff;
             padding: 12px;
@@ -36,12 +41,29 @@
             margin-bottom: 20px;
             line-height: 1.6;
         }
+
         .ctrl-bar {
             display: flex;
             gap: 10px;
             margin-bottom: 16px;
             flex-wrap: wrap;
         }
+
+        .scheme-row {
+            flex-basis: 100%;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         button {
             padding: 10px 16px;
             border: none;
@@ -50,10 +72,27 @@
             font-size: 14px;
             font-weight: 500;
         }
-        .btn-start { background: #2563eb; color: white; }
-        .btn-stop { background: #dc2626; color: white; }
-        .btn-add { background: #059669; color: white; }
-        .btn-clear { background: #6b7280; color: white; }
+
+        .btn-start {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-stop {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-add {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-clear {
+            background: #6b7280;
+            color: white;
+        }
+
         /* 流程条目样式 */
         .flow-list {
             border: 1px solid #e5e7eb;
@@ -63,6 +102,7 @@
             max-height: 320px;
             overflow-y: auto;
         }
+
         .flow-item {
             display: flex;
             align-items: center;
@@ -71,221 +111,556 @@
             border-bottom: 1px solid #f3f4f6;
             flex-wrap: wrap;
         }
-        .flow-item:last-child { border-bottom: none; }
+
+        .flow-item:last-child {
+            border-bottom: none;
+        }
+
         .flow-item input {
             padding: 8px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
             font-size: 14px;
         }
-        .text-input { width: 140px; margin-right: 20px; }
-        .time-input { width: 70px; }
+
+        .text-input {
+            width: 140px;
+            margin-right: 20px;
+        }
+
+        .time-input {
+            width: 70px;
+        }
+
         .del-btn {
             background: #f87171;
             color: white;
             padding: 6px 10px;
         }
+
         .log-box h4 {
             margin-bottom: 8px;
             color: #374151;
         }
+
         #logArea {
             width: 100%;
             height: 220px;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 10px;
+            margin-top: 10px;
             overflow-y: auto;
             white-space: pre-wrap;
             font-size: 13px;
         }
     </style>
 </head>
+
 <body>
-<div class="wrap">
-    <h2>小度语音循环播报助手</h2>
-    <div class="tip">
-        1. 顶部流程列表自定义播报文字+等待间隔（秒），可新增/删除多条动作<br>
-        2. 点击【添加动作】新增一条播报节点，清空流程重置所有配置<br>
-        3. 运行逻辑：循环执行下方所有流程条目
-    </div>
-
-    <div class="ctrl-bar">
-        <button class="btn-start" id="startBtn">开始播报</button>
-        <button class="btn-stop" id="stopBtn">停止播报</button>
-        <button class="btn-add" id="addItemBtn">添加动作节点</button>
-        <button class="btn-clear" id="clearFlowBtn">清空所有流程</button>
-    </div>
-
-    <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-        <span>开场等待间隔(秒)：</span>
-        <input type="number" id="initDelay" value="18" min="1" style="width:80px;padding:8px;">
-    </div>
-
-    <h4 style="margin-bottom:10px;">循环流程列表（按顺序无限循环）</h4>
-    <div class="flow-list" id="flowList">
-        <!-- 默认初始化流程：挑战首领 →20秒鬼火 →25秒鬼火 →25秒鬼火 →20秒挑战首领 -->
-        <div class="flow-item">
-            <span>播报文字：</span>
-            <input class="text-input" value="挑战首领">
-            <span>等待时长(秒)：</span>
-            <input class="time-input" value="20">
-            <button class="del-btn">删除</button>
+    <div class="wrap">
+        <h2>小度语音循环播报助手</h2>
+        <div class="tip">
+            1. 顶部流程列表自定义播报文字+等待间隔（秒），可新增/删除多条动作<br>
+            2. 点击【添加动作】新增一条播报节点，清空流程重置所有配置<br>
+            3. 运行逻辑：循环执行下方所有流程条目
         </div>
-        <div class="flow-item">
-            <span>播报文字：</span>
-            <input class="text-input" value="鬼火">
-            <span>等待时长(秒)：</span>
-            <input class="time-input" value="25">
-            <button class="del-btn">删除</button>
+
+        <div class="ctrl-bar">
+            <label style="display:flex;align-items:center;gap:8px;">
+                <span>方案：</span>
+                <select id="schemeSelect" style="padding:8px;border-radius:6px;border:1px solid #d1d5db;"></select>
+            </label>
+            <div class="scheme-row">
+                <button class="btn-add" id="addSchemeBtn">新增方案</button>
+                <button class="btn-add" id="renameSchemeBtn">重命名方案</button>
+                <button class="btn-clear" id="delSchemeBtn">删除方案</button>
+            </div>
+
+            <div class="action-row">
+                <button class="btn-start" id="startBtn">开始播报</button>
+                <button class="btn-stop" id="stopBtn">停止播报</button>
+                <button class="btn-add" id="addItemBtn">添加动作节点</button>
+                <button class="btn-clear" id="clearFlowBtn">清空所有流程</button>
+                <button class="btn-clear" id="resetFlowBtn">重置流程</button>
+            </div>
         </div>
-        <div class="flow-item">
-            <span>播报文字：</span>
-            <input class="text-input" value="鬼火">
-            <span>等待时长(秒)：</span>
-            <input class="time-input" value="25">
-            <button class="del-btn">删除</button>
+
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+            <span>开场等待间隔(秒)：</span>
+            <input type="number" id="initDelay" value="5" min="1" style="width:80px;padding:8px;">
         </div>
-        <div class="flow-item">
-            <span>播报文字：</span>
-            <input class="text-input" value="鬼火">
-            <span>等待时长(秒)：</span>
-            <input class="time-input" value="20">
-            <button class="del-btn">删除</button>
-        </div>
-    </div>
 
-    <div class="log-box">
-        <h4>运行日志</h4>
-        <div id="logArea"></div>
-    </div>
-</div>
-
-<script>
-    const logArea = document.getElementById('logArea');
-    const flowList = document.getElementById('flowList');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const addItemBtn = document.getElementById('addItemBtn');
-    const clearFlowBtn = document.getElementById('clearFlowBtn');
-    const initDelayInput = document.getElementById('initDelay');
-
-    let timerList = [];
-    let isRunning = false;
-
-    // 语音朗读
-    function speakWord(text) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'zh-CN';
-        utter.rate = 1;
-        window.speechSynthesis.speak(utter);
-        addLog(`【播报】${text}`);
-    }
-
-    // 写入日志
-    function addLog(msg) {
-        const time = new Date().toLocaleTimeString();
-        logArea.innerText = `[${time}] ${msg}\n` + logArea.innerText;
-    }
-
-    // 清空所有定时器
-    function clearAllTimer() {
-        timerList.forEach(t => clearTimeout(t));
-        timerList = [];
-        window.speechSynthesis.cancel();
-    }
-
-    // 获取当前所有流程配置
-    function getFlowConfig() {
-        const items = flowList.querySelectorAll('.flow-item');
-        const flowArr = [];
-        items.forEach(item => {
-            const text = item.querySelector('.text-input').value.trim();
-            const sec = Number(item.querySelector('.time-input').value) || 1;
-            flowArr.push({ text, delay: sec * 1000 });
-        });
-        return flowArr;
-    }
-
-    // 循环执行整条流程
-    function runFlow(flowArr, index = 0) {
-        if (!isRunning) return;
-        const current = flowArr[index];
-        speakWord(current.text);
-        // 当前节点等待结束，执行下一条
-        const t = setTimeout(() => {
-            const nextIdx = index + 1;
-            if (nextIdx >= flowArr.length) {
-                // 一轮走完，从头循环
-                runFlow(flowArr, 0);
-            } else {
-                runFlow(flowArr, nextIdx);
-            }
-        }, current.delay);
-        timerList.push(t);
-    }
-
-    // 添加一条流程节点
-    addItemBtn.addEventListener('click', () => {
-        const html = `
+        <h4 style="margin-bottom:10px;">循环流程列表（按顺序无限循环）</h4>
+        <div class="flow-list" id="flowList">
+            <!-- 默认初始化流程：挑战首领 →20秒鬼火 →25秒鬼火 →25秒鬼火 →20秒挑战首领 -->
+            <!-- <div class="flow-item">
+                <span>播报文字：</span>
+                <input class="text-input" value="挑战首领">
+                <span>等待时长(秒)：</span>
+                <input class="time-input" value="20">
+                <button class="del-btn">删除</button>
+            </div>
             <div class="flow-item">
                 <span>播报文字：</span>
-                <input class="text-input" placeholder="输入播报内容">
+                <input class="text-input" value="鬼火">
                 <span>等待时长(秒)：</span>
-                <input class="time-input" value="10" min="1">
+                <input class="time-input" value="25">
+                <button class="del-btn">删除</button>
+            </div>
+            <div class="flow-item">
+                <span>播报文字：</span>
+                <input class="text-input" value="鬼火">
+                <span>等待时长(秒)：</span>
+                <input class="time-input" value="25">
+                <button class="del-btn">删除</button>
+            </div>
+            <div class="flow-item">
+                <span>播报文字：</span>
+                <input class="text-input" value="鬼火">
+                <span>等待时长(秒)：</span>
+                <input class="time-input" value="20">
+                <button class="del-btn">删除</button>
+            </div> -->
+        </div>
+
+        <div class="log-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <h4 style="margin:0">运行日志</h4>
+                <button class="btn-clear" id="clearLogBtn" style="padding:6px 10px;">清空日志</button>
+            </div>
+            <div id="logArea"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== 【初始默认JSON，方便代码调整】 =====================
+        const DEFAULT_INIT_SCHEME_JSON = {
+            schemeList: [
+                {
+                    name: "方案一",
+                    initDelaySec: 4,
+                    flow: [
+                        { text: "挑战首领1", delaySec: 5 },
+                        { text: "鬼火", delaySec: 5 },
+                    ]
+                }
+            ],
+            activeIndex: 0
+        };
+        const STORAGE_KEY = "voice_broadcast_schemes";
+
+        const logArea = document.getElementById('logArea');
+        const flowList = document.getElementById('flowList');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const clearFlowBtn = document.getElementById('clearFlowBtn');
+        const schemeSelect = document.getElementById('schemeSelect');
+        const addSchemeBtn = document.getElementById('addSchemeBtn');
+        const delSchemeBtn = document.getElementById('delSchemeBtn');
+        const renameSchemeBtn = document.getElementById('renameSchemeBtn');
+        const clearLogBtn = document.getElementById('clearLogBtn');
+        const resetFlowBtn = document.getElementById('resetFlowBtn');
+        const initDelayInput = document.getElementById('initDelay');
+
+        let timerList = [];
+        let isRunning = false;
+        let isWarmed = false; // 是否已由用户手势解锁语音播放
+
+        let appData = null;
+        const supportsSpeech = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
+
+        // 读取本地存储，没有就使用默认JSON
+        function loadStorage() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                try {
+                    appData = JSON.parse(raw);
+                } catch (e) {
+                    appData = JSON.parse(JSON.stringify(DEFAULT_INIT_SCHEME_JSON));
+                }
+            } else {
+                appData = JSON.parse(JSON.stringify(DEFAULT_INIT_SCHEME_JSON));
+            }
+        }
+
+        // 保存全部数据到localStorage
+        function saveStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        // 获取当前激活方案
+        function getActiveScheme() {
+            return appData.schemeList[appData.activeIndex];
+        }
+
+        // 渲染方案下拉选择框
+        function renderSchemeSelect() {
+            schemeSelect.innerHTML = "";
+            appData.schemeList.forEach((sch, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = sch.name;
+                schemeSelect.appendChild(opt);
+            });
+            schemeSelect.value = appData.activeIndex;
+        }
+
+        // 新增方案（默认复制当前或使用默认模板）
+        function addNewScheme(name) {
+            const template = JSON.parse(JSON.stringify(DEFAULT_INIT_SCHEME_JSON.schemeList[0]));
+            template.name = name || (`方案${appData.schemeList.length + 1}`);
+            appData.schemeList.push(template);
+            appData.activeIndex = appData.schemeList.length - 1;
+            saveStorage();
+            renderSchemeSelect();
+            renderSchemeToUi();
+            addLog(`已新增方案：${template.name}`);
+        }
+
+        function deleteCurrentScheme() {
+            if (appData.schemeList.length <= 1) {
+                addLog('警告：至少保留一个方案，删除已被取消');
+                return;
+            }
+            const idx = appData.activeIndex;
+            const name = appData.schemeList[idx].name;
+            appData.schemeList.splice(idx, 1);
+            appData.activeIndex = Math.max(0, idx - 1);
+            saveStorage();
+            renderSchemeSelect();
+            renderSchemeToUi();
+            addLog(`已删除方案：${name}`);
+        }
+
+        function renameCurrentScheme(newName) {
+            const sch = getActiveScheme();
+            const old = sch.name;
+            sch.name = newName || sch.name;
+            saveStorage();
+            renderSchemeSelect();
+            addLog(`已重命名方案：${old} → ${sch.name}`);
+        }
+
+        // 将当前页面UI状态同步到appData的激活方案对象
+        function syncUiToActiveScheme() {
+            const sch = getActiveScheme();
+            sch.initDelaySec = Number(initDelayInput.value) || 10;
+            const items = flowList.querySelectorAll('.flow-item');
+            const arr = [];
+            items.forEach(el => {
+                const t = el.querySelector('.text-input').value.trim();
+                const s = Number(el.querySelector('.time-input').value) || 1;
+                arr.push({ text: t, delaySec: s });
+            });
+            sch.flow = arr;
+        }
+
+        // 将激活方案数据渲染到页面UI
+        function renderSchemeToUi() {
+            const sch = getActiveScheme();
+            initDelayInput.value = sch.initDelaySec;
+            flowList.innerHTML = "";
+            sch.flow.forEach(f => {
+                addFlowItemHtml(f.text, f.delaySec);
+            });
+            bindDelBtn();
+        }
+
+        // 在 DOM 中添加一条流程项（带值）
+        function addFlowItemHtml(text = '', delaySec = 10) {
+            const html = `
+            <div class="flow-item">
+                <span>播报文字：</span>
+                <input type="text" class="text-input" value="${escapeHtml(text)}" placeholder="输入播报内容" required>
+                <span>等待时长(秒)：</span>
+                <input type="number" class="time-input" value="${Number(delaySec) || 10}" min="1">
                 <button class="del-btn">删除</button>
             </div>
         `;
-        flowList.insertAdjacentHTML('beforeend', html);
-        bindDelBtn();
-    });
+            flowList.insertAdjacentHTML('beforeend', html);
+            bindDelBtn();
+        }
 
-    // 绑定删除按钮事件
-    function bindDelBtn() {
-        document.querySelectorAll('.del-btn').forEach(btn => {
-            btn.onclick = function () {
-                this.closest('.flow-item').remove();
+        // 简单转义，避免插入含引号文本破坏 HTML
+        function escapeHtml(s) {
+            if (!s) return '';
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        // 语音朗读
+        function speakWord(text) {
+            try {
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'zh-CN';
+                utter.rate = 1;
+                utter.onerror = function (e) { addLog(`语音播报错误：${e}`); };
+                window.speechSynthesis.speak(utter);
+                addLog(`【播报】${text}`);
+            } catch (err) {
+                addLog(`语音播报异常：${err}`);
             }
-        })
-    }
-    bindDelBtn();
-
-    // 清空全部流程
-    clearFlowBtn.addEventListener('click', () => {
-        flowList.innerHTML = '';
-        addLog("已清空所有自定义流程节点");
-    });
-
-    // 开始播报
-    startBtn.addEventListener('click', () => {
-        if (isRunning) {
-            addLog("播报正在运行，请勿重复点击");
-            return;
         }
-        const flow = getFlowConfig();
-        if (flow.length === 0) {
-            addLog("错误：流程列表不能为空，请添加播报动作");
-            return;
-        }
-        isRunning = true;
-        addLog("===== 播报启动 =====");
-        
-        // 开场延时
-        const initDelay = Number(initDelayInput.value) * 1000;
-        const t = setTimeout(() => {
-            runFlow(flow, 0);
-        }, initDelay);
-        timerList.push(t);
-    });
 
-    // 停止播报
-    stopBtn.addEventListener('click', () => {
-        if (!isRunning) return;
-        isRunning = false;
-        clearAllTimer();
-        addLog("===== 手动停止播报 =====");
-    });
-</script>
+        // 写入日志
+        function addLog(msg) {
+            const time = new Date().toLocaleTimeString();
+            logArea.innerText = `[${time}] ${msg}\n` + logArea.innerText;
+        }
+
+        // 清空所有定时器
+        function clearAllTimer() {
+            timerList.forEach(t => clearTimeout(t));
+            timerList = [];
+            window.speechSynthesis.cancel();
+        }
+
+        // 获取当前所有流程配置
+        function getFlowConfig() {
+            const items = flowList.querySelectorAll('.flow-item');
+            const flowArr = [];
+            items.forEach(item => {
+                const text = item.querySelector('.text-input').value.trim();
+                if (!text) {
+                    addLog('警告：检测到空播报文本，已自动跳过该节点');
+                    return;
+                }
+                const secRaw = item.querySelector('.time-input').value;
+                const sec = Math.max(1, Number(secRaw) || 1);
+                flowArr.push({ text, delay: sec * 1000 });
+            });
+            return flowArr;
+        }
+
+        // 循环执行整条流程
+        function runFlow(flowArr, index = 0) {
+            if (!isRunning) return;
+            const current = flowArr[index];
+            speakWord(current.text);
+            // 当前节点等待结束，执行下一条
+            const t = setTimeout(() => {
+                const nextIdx = index + 1;
+                if (nextIdx >= flowArr.length) {
+                    // 一轮走完，从头循环
+                    runFlow(flowArr, 0);
+                } else {
+                    runFlow(flowArr, nextIdx);
+                }
+            }, current.delay);
+            timerList.push(t);
+        }
+
+        // 添加一条流程节点
+        addItemBtn.addEventListener('click', () => {
+            addFlowItemHtml('', 10);
+            // 自动保存变更
+            syncUiToActiveScheme();
+            saveStorage();
+        });
+
+        // 新增方案按钮
+        addSchemeBtn.addEventListener('click', () => {
+            const name = prompt('请输入新方案名称：', `方案${appData.schemeList.length + 1}`);
+            if (name) addNewScheme(name.trim());
+        });
+
+        // 删除方案按钮
+        delSchemeBtn.addEventListener('click', () => {
+            if (confirm('确认删除当前方案吗？此操作不可撤销')) {
+                deleteCurrentScheme();
+            }
+        });
+
+        // 重命名方案按钮
+        renameSchemeBtn.addEventListener('click', () => {
+            const name = prompt('请输入新方案名称：', getActiveScheme().name);
+            if (name) renameCurrentScheme(name.trim());
+        });
+
+        // 切换方案
+        schemeSelect.addEventListener('change', () => {
+            syncUiToActiveScheme();
+            // 保存当前方案改动
+            saveStorage();
+            appData.activeIndex = Number(schemeSelect.value);
+            renderSchemeToUi();
+            addLog(`切换方案：${getActiveScheme().name}`);
+        });
+
+        // 绑定删除按钮事件
+        function bindDelBtn() {
+            document.querySelectorAll('.del-btn').forEach(btn => {
+                btn.onclick = function () {
+                    const el = this.closest('.flow-item');
+                    if (el) el.remove();
+                    // 自动保存变更
+                    syncUiToActiveScheme();
+                    saveStorage();
+                    addLog('已删除流程节点并保存');
+                }
+            })
+        }
+        bindDelBtn();
+
+        // 清空全部流程
+        clearFlowBtn.addEventListener('click', () => {
+            flowList.innerHTML = '';
+            // 保存到当前方案
+            syncUiToActiveScheme();
+            saveStorage();
+            addLog("已清空所有自定义流程节点");
+        });
+
+        // 重置当前方案流程为默认
+        if (resetFlowBtn) {
+            resetFlowBtn.addEventListener('click', () => {
+                if (!confirm('确认将当前方案重置为默认流程？此操作会覆盖当前流程。')) return;
+                const sch = getActiveScheme();
+                const def = DEFAULT_INIT_SCHEME_JSON.schemeList[0];
+                // 只重置流程与 initDelay
+                sch.flow = JSON.parse(JSON.stringify(def.flow));
+                sch.initDelaySec = def.initDelaySec;
+                saveStorage();
+                renderSchemeToUi();
+                addLog(`已将当前方案重置为默认流程（来自 ${def.name || '默认方案'}）`);
+            });
+        }
+
+        // 清空日志按钮
+        if (clearLogBtn) {
+            clearLogBtn.addEventListener('click', () => {
+                if (!confirm('确认清空运行日志吗？')) return;
+                logArea.innerText = '';
+                addLog('已清空运行日志');
+            });
+        }
+
+        // 开始播报
+        startBtn.addEventListener('click', () => {
+            if (isRunning) {
+                addLog("播报正在运行，请勿重复点击");
+                return;
+            }
+            const flow = getFlowConfig();
+            if (flow.length === 0) {
+                addLog("错误：流程列表不能为空，请添加播报动作");
+                return;
+            }
+
+            // 如果支持语音但尚未由用户手势解锁，则先在同一手势中播放一段短语以解锁 iOS/Safari
+            if (supportsSpeech && !isWarmed) {
+                try {
+                    const unlockUtter = new SpeechSynthesisUtterance('');
+                    unlockUtter.lang = 'zh-CN';
+                    unlockUtter.rate = 1;
+                    unlockUtter.onend = function () {
+                        isWarmed = true;
+                        // 现在开始正式播报（带开场延时）
+                        startRunningFlow(flow);
+                    };
+                    window.speechSynthesis.speak(unlockUtter);
+                    addLog('已执行语音解锁（用户手势触发）');
+                } catch (e) {
+                    addLog('语音解锁异常，仍尝试开始：' + e);
+                    isWarmed = true;
+                    startRunningFlow(flow);
+                }
+            } else {
+                // 已解锁或不支持语音，直接开始
+                startRunningFlow(flow);
+            }
+        });
+
+        function startRunningFlow(flow) {
+            isRunning = true;
+            addLog("===== 播报启动 =====");
+            // 开场延时
+            const initDelay = Number(initDelayInput.value) * 1000;
+            const t = setTimeout(() => {
+                runFlow(flow, 0);
+            }, initDelay);
+            timerList.push(t);
+        }
+
+        // 停止播报
+        stopBtn.addEventListener('click', () => {
+            if (!isRunning) return;
+            isRunning = false;
+            clearAllTimer();
+            addLog("===== 手动停止播报 =====");
+        });
+
+
+        // // 切换方案下拉事件
+        // schemeSelect.addEventListener('change', () => {
+        //     syncUiToActiveScheme();
+        //     saveStorage();
+        //     appData.activeIndex = Number(schemeSelect.value);
+        //     renderSchemeToUi();
+        //     addLog(`切换方案：${getActiveScheme().name}`);
+        // });
+
+        //页面卸载/切换前自动保存当前UI到方案
+        window.addEventListener('beforeunload', () => {
+            syncUiToActiveScheme();
+            saveStorage();
+        });
+
+        // 当流程输入发生改变时自动同步并保存
+        flowList.addEventListener('input', () => {
+            syncUiToActiveScheme();
+            saveStorage();
+        });
+
+
+        // 初始化
+        (function init() {
+            loadStorage();
+            // 如果 localStorage 中没有方案数据或结构不完整则使用默认常量
+            let needDefault = false;
+            if (!appData || !appData.schemeList || appData.schemeList.length === 0) {
+                needDefault = true;
+            } else {
+                // 确保每个方案都有 flow 数组
+                appData.schemeList.forEach(sch => {
+                    if (!Array.isArray(sch.flow)) sch.flow = [];
+                });
+                // 如果只有一个方案且 flow 为空，认为未初始化，回退默认
+                if (appData.schemeList.length === 1 && appData.schemeList[0].flow.length === 0) {
+                    needDefault = true;
+                }
+            }
+
+            if (needDefault) {
+                appData = JSON.parse(JSON.stringify(DEFAULT_INIT_SCHEME_JSON));
+                appData.activeIndex = 0;
+                saveStorage();
+            }
+
+            renderSchemeSelect();
+            renderSchemeToUi();
+            bindDelBtn();
+
+            // 移动端/IOS 兼容性：部分 iOS Safari 需要用户触发后才能播放语音，做一次轻量的预热（绑定到页面第一次触摸）
+            if (supportsSpeech) {
+                const warmUp = () => {
+                    try {
+                        const u = new SpeechSynthesisUtterance('');
+                        u.volume = 0;
+                        window.speechSynthesis.speak(u);
+                        window.speechSynthesis.cancel();
+                    } catch (e) { }
+                    window.removeEventListener('touchstart', warmUp);
+                };
+                window.addEventListener('touchstart', warmUp, { once: true });
+            } else {
+                // 不支持时禁用开始按钮
+                startBtn.disabled = true;
+                addLog('警告：当前浏览器不支持 Web Speech API，语音播报不可用');
+            }
+        })();
+    </script>
 </body>
+
 </html>
